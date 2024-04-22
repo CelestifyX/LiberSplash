@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+if [ "$EUID" -ne 0 ]; then
+    echo "error: you cannot perform this operation unless you are root."
+    exit 1
+fi
+
+theme() {
+    directory="/usr/share/plymouth/themes/liber-splash"
+
+    if [ -d "${directory}" ]; then
+        echo "Liber Splash is likely already installed."
+        return 0
+    fi
+
+    mkdir -p "${directory}"
+    cp -r * "${directory}" || { echo "Error when copying files"; exit 1; }
+    rm -f "${directory}/install"
+
+    echo "Liber Splash theme installed successfully!"
+}
+
+grub() {
+    file="/etc/default/grub"
+
+    if [ ! -f "${file}" ]; then
+        echo "File ${file} not found"
+        exit 1
+    fi
+
+    content=$(cat "${file}")
+    key="GRUB_CMDLINE_LINUX_DEFAULT="
+
+    if grep -q "^#.*${key}" <<< "$content" || ! grep -q "${key}" <<< "$content"; then
+        echo "${key} variable not found in ${file}"
+        exit 1
+    fi
+
+    if grep -q "splash" <<< "$content"; then
+        echo "The splash value is already present in the ${key} variable"
+        exit 1
+    fi
+
+    sed -i 's/^\(GRUB_CMDLINE_LINUX_DEFAULT=".*\)"/\1 splash"/' "${file}"
+    grub-mkconfig -o /boot/grub/grub.cfg >/dev/null 2>&1 || { echo "An error occurred while executing the grub-mkconfig command"; exit 1; }
+
+    echo "GRUB configuration has been successfully configured!"
+    exit 0
+}
+
+if theme; then
+    grub
+fi
