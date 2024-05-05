@@ -5,12 +5,11 @@ This Boot Splash Screen theme adds a stylish visual effect when booting your ope
 ## Installation
 
 1. Clone the repository
-
     ```bash
     git clone https://github.com/CelestifyX/LiberSplash.git
     ```
 
-2. Navitate to the project directory:
+2. Navigate to the project directory:
     ```bash
     cd LiberSplash
     ```
